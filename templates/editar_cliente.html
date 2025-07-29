@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block conteudo %}
+<div class="container mt-4">
+
+  <h3><i class="bi bi-person-lines-fill"></i> Editar Cliente</h3>
+
+  <ul class="nav nav-tabs mt-3" role="tablist">
+    <li class="nav-item">
+      <a class="nav-link active" data-bs-toggle="tab" href="#dados">Dados do Cliente</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="tab" href="#contatos">Contatos</a>
+    </li>
+  </ul>
+
+  <div class="tab-content border p-4 rounded-bottom">
+    <!-- Aba: Dados do cliente -->
+    <div class="tab-pane fade show active" id="dados">
+      <form method="POST" action="{{ url_for('editar_cliente', cliente_id=cliente.codigo) }}">
+        
+
+        <div class="row">
+          <div class="col-md-2 mb-3">
+            <label for="codigo">Código</label>
+            <input type="text" class="form-control text-center" id="codigo" name="codigo"
+                   value="{{ cliente.codigo }}" readonly>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="nome">Nome</label>
+            <input type="text" class="form-control" id="nome" name="nome"
+                   value="{{ cliente.nome }}" required>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label for="cpf_cnpj">CPF ou CNPJ</label>
+            <input type="text" class="form-control" id="cpf_cnpj" name="cpf_cnpj"
+                   value="{{ cliente.cpf_cnpj }}" placeholder="Digite o CPF ou CNPJ">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="empresa">Empresa</label>
+          <input type="text" class="form-control" id="empresa" name="empresa"
+                 value="{{ cliente.empresa }}">
+        </div>
+
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label for="telefone">Telefone</label>
+            <input type="text" class="form-control" id="telefone" name="telefone"
+                   value="{{ cliente.telefone }}">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label for="email">Email</label>
+            <input type="email" class="form-control" id="email" name="email"
+                   value="{{ cliente.email }}">
+          </div>
+        </div>
+
+        <h5 class="mt-4">Endereço</h5>
+        <div class="row g-2">
+          <div class="col-md-4">
+            <input type="text" class="form-control" id="rmcep" name="rmcep"
+                   value="{{ cliente.rmcep }}" placeholder="CEP">
+          </div>
+          <div class="col-md-8">
+            <input type="text" class="form-control" id="endereco_rua" name="endereco_rua"
+                   value="{{ cliente.endereco_rua }}" placeholder="Rua">
+          </div>
+        </div>
+
+        <div class="row g-2 mt-2">
+          <div class="col-md-4">
+            <input type="text" class="form-control" id="endereco_numero" name="endereco_numero"
+                   value="{{ cliente.endereco_numero }}" placeholder="Número">
+          </div>
+          <div class="col-md-4">
+            <input type="text" class="form-control" id="endereco_complemento" name="endereco_complemento"
+                   value="{{ cliente.endereco_complemento }}" placeholder="Complemento">
+          </div>
+        </div>
+
+        <div class="row g-2 mt-2">
+          <div class="col-md-4">
+            <input type="text" class="form-control" id="bairro" name="bairro"
+                   value="{{ cliente.bairro }}" placeholder="Bairro">
+          </div>
+          <div class="col-md-4">
+            <input type="text" class="form-control" id="cidade" name="cidade"
+                   value="{{ cliente.cidade }}" placeholder="Cidade">
+          </div>
+          <div class="col-md-4">
+            <input type="text" class="form-control" id="estado" name="estado"
+                   value="{{ cliente.estado }}" placeholder="UF">
+          </div>
+        </div>
+
+        <div class="text-end mt-4">
+          <a href="{{ url_for('listar_clientes') }}" class="btn btn-outline-secondary me-2">Voltar</a>
+          <button type="submit" class="btn btn-outline-primary">
+            <i class="bi bi-check-circle-fill"></i> Salvar
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Aba: Contatos -->
+    <div class="tab-pane fade" id="contatos">
+      <h5 class="mb-3"><i class="bi bi-chat-square-text"></i> Histórico de Contatos</h5>
+
+      {% if cliente.contatos %}
+        <ul class="list-group">
+          {% for contato in cliente.contatos %}
+            <li class="list-group-item">
+              <strong>{{ contato.assunto }}</strong>
+              <small class="text-muted d-block">{{ contato.data.strftime('%d/%m/%Y %H:%M') }}</small>
+              <p class="mb-0">{{ contato.descricao | e }}</p>
+              <a href="{{ url_for('ver_contato', contato_id=contato.codigo) }}" class="btn btn-sm btn-outline-info mt-2">Ver contato</a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-muted">Este cliente ainda não possui contatos registrados.</p>
+      {% endif %}
+
+      <a href="{{ url_for('novo_contato', cliente_codigo=cliente.codigo) }}" class="btn btn-success mt-3">
+        <i class="bi bi-plus-circle"></i> Adicionar Novo Contato
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  $(document).ready(function () {
+    $("#rmcep").mask("00000-000");
+    $("#cpf_cnpj").on("blur", function () {
+      const valor = $(this).val().replace(/\D/g, "");
+      if (valor.length <= 11) {
+        $(this).mask("000.000.000-00", {reverse: true});
+      } else {
+        $(this).mask("00.000.000/0000-00", {reverse: true});
+      }
+      $(this).trigger("input");
+    });
+
+    $("#rmcep").on("blur", function () {
+      const cep = this.value.replace(/\D/g, "");
+      if (cep.length === 8) {
+        fetch(`https://viacep.com.br/ws/${cep}/json/`)
+          .then(response => response.json())
+          .then(data => {
+            if (!("erro" in data)) {
+              $("#endereco_rua").val(data.logradouro || "");
+              $("#bairro").val(data.bairro || "");
+              $("#cidade").val(data.localidade || "");
+              $("#estado").val(data.uf || "");
+              $("#endereco_numero").focus();
+            }
+          });
+      }
+    });
+  });
+</script>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        {% for category, message in messages %}
+          Swal.fire({
+            icon: '{{ "success" if category == "sucesso" else "error" }}',
+            title: '{{ "Sucesso!" if category == "sucesso" else "Erro!" }}',
+            text: '{{ message }}',
+            timer: {{ 2000 if category == "sucesso" else "null" }},
+            showConfirmButton: {{ "false" if category == "sucesso" else "true" }}
+          });
+        {% endfor %}
+      });
+    </script>
+  {% endif %}
+{% endwith %}
+
+{% endblock %}

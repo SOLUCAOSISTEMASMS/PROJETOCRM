@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block titulo %}Sistema{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/leads.css') }}">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    body {
+      display: flex;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+    .content {
+      margin-left: 270px;
+      padding: 20px;
+      flex: 1;
+    }
+    .empresa-header .alert {
+      margin: 0;
+      margin-left: 250px;
+      border-radius: 0;
+      background-color: #0672e6;
+      color: white;
+      width: calc(100% - 250px);
+      position: sticky;
+      top: 56px;
+      z-index: 1040;
+    }
+    .sidebar {
+      position: fixed;
+      left: 0;
+      width: 250px;
+      height: 100vh;
+      z-index: 1030;
+      background-color: #0d6efd; /* Bootstrap azul primário */
+      padding: 20px;
+      overflow-y: auto;
+    }
+    @media (max-width: 1440px) {
+      .empresa-header .alert {
+        margin-left: 0;
+        width: 100%;
+        text-align: center;
+      }
+      .sidebar {
+        left: 0;
+        width: 250px;
+      }
+      .content {
+        margin-left: 250px;
+      }
+    }
+  </style>
+</head>
+<body>
+  {% if current_user.is_authenticated %}
+  
+
+  <!-- 📌 Sidebar lateral -->
+  <div class="sidebar shadow">
+    <h4 class="mb-3">Solução Leads</h4>
+    <h5><i class="fa-solid fa-hands"></i> Olá, {{ current_user.nome_usuario }}</h5>
+    <hr class="mb-3">
+    <ul class="nav flex-column">
+  <li class="nav-item"><a class="nav-link" href="/"><i class="bi bi-person-lines-fill"></i> Leads</a></li>
+  <li class="nav-item"><a class="nav-link" href="/listar_funcionarios"><i class="bi bi-person-badge-fill"></i> Funcionários</a></li>
+  <li class="nav-item"><a class="nav-link" href="/listar_clientes"><i class="bi bi-people-fill"></i> Clientes</a></li>
+
+  <!-- 📊 Dropdown Relatórios -->
+  <!-- 📊 Menu Relatórios (estilo accordion) -->
+<li class="nav-item">
+  <a class="nav-link" data-bs-toggle="collapse" href="#submenuRelatorios" role="button" aria-expanded="false" aria-controls="submenuRelatorios">
+    <i class="bi bi-bar-chart-line-fill"></i> Relatórios
+    <i class="bi bi-chevron-down float-end"></i>
+  </a>
+  <div class="collapse" id="submenuRelatorios">
+    <ul class="nav flex-column ms-3">
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('relatorio_clientes') }}">
+          <i class="bi bi-folder-fill"></i> Clientes cadastrados
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('relatorio.relatorio_leads') }}">
+          <i class="bi bi-journal-text"></i> Leads
+        </a>
+      </li>
+    </ul>
+  </div>
+</li>
+
+
+  <li class="nav-item"><a class="nav-link" href="{{ url_for('minha_empresa') }}"><i class="bi bi-building-fill"></i> Minha Empresa</a></li>
+  {% if current_user.tipo == 'admin' %}
+  <li class="nav-item"><a class="nav-link" href="{{ url_for('painel_logs') }}"><i class="bi bi-shield-check"></i> Auditoria</a></li>
+  {% endif %}
+  <li class="nav-item mt-3">
+    <a class="btn btn-light w-100" href="/logout"><i class="bi bi-box-arrow-right"></i> Sair</a>
+  </li>
+</ul>
+  </div>
+
+  <!-- 🏢 Header da empresa -->
+  <header class="empresa-header">
+    {% if empresa %}
+    <div class="alert text-center mb-0 rounded-0">
+      Você está na empresa: <strong>{{ empresa.nome }}</strong> (CNPJ <strong>{{ empresa.cnpj }}</strong>)
+    </div>
+    {% endif %}
+  </header>
+  {% endif %}
+
+  <!-- 📄 Conteúdo principal -->
+  <div class="content">
+    {% block conteudo %}{% endblock %}
+  </div>
+</body>
+</html>

@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block titulo %}Cadastro de Lead{% endblock %}
+{% block conteudo %}
+  <div class="container mt-5">
+    <div class="card shadow">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Cadastro de Lead</h4>
+      </div>
+      <div class="card-body">
+        <form action="/salvar" method="POST">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Nome completo</label>
+              <input type="text" class="form-control" name="nome" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" name="email" required>
+            </div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Telefone</label>
+              <input type="text" class="form-control" name="telefone">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Empresa</label>
+              <input type="text" class="form-control" name="empresa">
+            </div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Cargo</label>
+              <input type="text" class="form-control" name="cargo">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Origem do lead</label>
+              <input type="text" class="form-control" name="origem">
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Status</label>
+            <select class="form-select" name="status">
+              <option value="Novo">Novo</option>
+              <option value="Em contato">Em contato</option>
+              <option value="Convertido">Convertido</option>
+              <option value="Perdido">Perdido</option>
+            </select>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Interesses</label>
+            <textarea class="form-control" name="interesses" rows="2"></textarea>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Observações internas</label>
+            <textarea class="form-control" name="observacoes" rows="3"></textarea>
+          </div>
+          
+          <button type="submit" class="btn btn-success">Salvar Lead</button>
+          <a href="/" class="btn btn-secondary ms-2">Voltar para lista</a>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}

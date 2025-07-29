@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block titulo %}Lista de Clientes{% endblock %}
+{% block conteudo %}
+
+<div class="container-fluid mt-4">
+  <form method="GET" action="{{ url_for('listar_clientes') }}" class="row g-2 mb-3 align-items-end">
+    <div class="col-md-5">
+      <input type="text" name="busca" class="form-control" placeholder="Buscar por nome, email ou empresa" value="{{ request.args.get('busca', '') }}">
+    </div>
+    <div class="col-md-auto">
+      <button type="submit" class="btn btn-outline-primary">
+        <i class="bi bi-search"></i> Buscar
+      </button>
+    </div>
+    
+    <div class="col-md-auto ms-auto">
+      <a href="{{ url_for('criar_cliente') }}" class="btn btn-primary">
+        <i class="bi bi-person-plus-fill"></i> Novo Cliente
+      </a>
+    </div>
+  </form>
+
+  <h3 class="d-flex align-items-center mb-4" style="font-weight: 600; font-size: 1.75rem;">
+    <span class="badge text-white me-2" style="background-color: #E0BBE4; font-size: 1.4rem;">
+      <i class="bi bi-person-lines-fill"></i>
+    </span>
+    Lista de Clientes
+  </h3>
+
+  {% if clientes %}
+    <table class="table table-striped table-hover align-middle table-theme-lilas-claro">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Email</th>
+          <th>Telefone</th>
+          <th>CPF/CNPJ</th>
+          <th class="text-center">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cliente in clientes %}
+          <tr>
+            <td>{{ cliente.nome }}</td>
+            <td>{{ cliente.email }}</td>
+            <td>{{ cliente.telefone }}</td>
+            <td>{{ cliente.cpf_cnpj }}</td>
+            <td class="text-center">
+              <a href="{{ url_for('criar_lead', cliente_id=cliente.codigo) }}" class="btn btn-sm btn-success me-1">
+  <i class="bi bi-plus-lg"></i> Lead
+</a>
+              <a href="{{ url_for('detalhes_cliente', cliente_id=cliente.codigo) }}" class="btn btn-sm btn-info me-1">
+                <i class="bi bi-eye"></i>Detalhes
+              </a>
+              <a href="{{ url_for('editar_cliente', cliente_id=cliente.codigo) }}" class="btn btn-sm btn-warning me-1">
+                <i class="bi bi-pencil"></i>Editar
+              </a>
+              <button type="button" class="btn btn-sm btn-danger" onclick="confirmarExclusao('{{ url_for('excluir_cliente', cliente_id=cliente.codigo) }}')">
+                <i class="bi bi-trash"></i>Excluir
+              </button>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="alert alert-warning text-center mt-4">Nenhum cliente cadastrado ainda.</div>
+  {% endif %}
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  function confirmarExclusao(url) {
+    Swal.fire({
+      title: 'Confirma a exclusão?',
+      text: 'Essa ação não pode ser desfeita.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sim, excluir',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const form = document.createElement('form');
+        form.action = url;
+        form.method = 'POST';
+        document.body.appendChild(form);
+        form.submit();
+      }
+    });
+  }
+
+  // Mensagem SweetAlert para feedback
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        Swal.fire({
+          icon: '{{ "success" if category == "success" else "success" }}',
+          title: '{{ "Sucesso!" if category == "success" else "success!" }}',
+          text: '{{ message }}',
+          timer: {{ 2000 if category == "success" else "null" }},
+          showConfirmButton: {{ "true" if category == "success" else "false" }}
+        });
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+</script>
+{% endblock %}

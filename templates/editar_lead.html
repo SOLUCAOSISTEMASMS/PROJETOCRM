@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block titulo %}Editar Lead{% endblock %}
+{% block conteudo %}
+
+<div class="container mt-5">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">Editar Lead</h4>
+    </div>
+
+    <div class="card-body">
+      <form method="POST" action="/atualizar/{{ lead.id }}">
+        <ul class="nav nav-tabs" role="tablist">
+          <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#cliente" type="button">Dados do Cliente</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#lead" type="button">Detalhes do Lead</button>
+          </li>
+        </ul>
+
+        <div class="tab-content p-3 border-bottom border-start border-end rounded-bottom">
+          <!-- Aba 1: Cliente -->
+          <div class="tab-pane fade show active" id="cliente">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Cliente</label>
+                <select name="cliente_id" id="cliente_id" class="form-select" required>
+                  {% for cliente in clientes %}
+                    <option value="{{ cliente.codigo }}" {% if cliente.codigo == lead.cliente_codigo %}selected{% endif %}>
+                      {{ cliente.nome }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Empresa</label>
+                <input type="text" class="form-control" value="{{ lead.cliente.empresa }}" readonly>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Email</label>
+                <input type="text" class="form-control" value="{{ lead.cliente.email }}" readonly>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Telefone</label>
+                <input type="text" class="form-control" value="{{ lead.cliente.telefone }}" readonly>
+              </div>
+              <div class="mb-3">
+                <button type="submit" class="btn btn-outline-primary">
+  <i class="bi bi-check-circle-fill"></i> Salvar Alterações
+</button>
+            <a href="/" class="btn btn-secondary ms-2">Cancelar</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aba 2: Lead -->
+          <div class="tab-pane fade" id="lead">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Cargo</label>
+                <input type="text" name="cargo" value="{{ lead.cargo }}" class="form-control">
+              </div>
+              <div class="mb-3">
+  <label for="origem" class="form-label">Origem do Lead</label>
+  <select name="origem" class="form-select" required>
+  <option value="">Selecione</option>
+  <option value="Instagram" {% if lead.origem == 'Instagram' %}selected{% endif %}>Instagram</option>
+  <option value="Site" {% if lead.origem == 'Site' %}selected{% endif %}>Site</option>
+  <option value="Indicação" {% if lead.origem == 'Indicação' %}selected{% endif %}>Indicação</option>
+  <option value="LinkedIn" {% if lead.origem == 'LinkedIn' %}selected{% endif %}>LinkedIn</option>
+  <option value="Facebook" {% if lead.origem == 'Facebook' %}selected{% endif %}>Facebook</option>
+  <option value="Google" {% if lead.origem == 'Google' %}selected{% endif %}>Google</option>
+  <option value="Outros" {% if lead.origem == 'Outros' %}selected{% endif %}>Outros</option>
+</select>
+
+</div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Data de Retorno</label>
+                <input type="date" name="data_retorno" value="{{ lead.data_retorno|default('', true) }}" class="form-control">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                  {% for s in ['Novo', 'Em contato', 'Convertido', 'Perdido'] %}
+                    <option value="{{ s }}" {% if lead.status == s %}selected{% endif %}>{{ s }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Interesses</label>
+              <textarea name="interesses" rows="2" class="form-control">{{ lead.interesses }}</textarea>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Observações internas</label>
+              <textarea name="observacoes" rows="3" class="form-control">{{ lead.observacoes }}</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-outline-primary">
+  <i class="bi bi-check-circle-fill"></i> Salvar Alterações
+</button>
+
+            <a href="/" class="btn btn-secondary ms-2">Cancelar</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

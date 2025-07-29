@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% block titulo %}Criar Usuário{% endblock %}
+{% block conteudo %}
+
+<div class="container mt-5">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">Cadastro de Usuário</h5>
+    </div>
+    <div class="card-body">
+      <form action="/criar_usuario" method="POST" id="form_usuario">
+
+        <!-- 🔗 Abas -->
+        <ul class="nav nav-tabs" id="usuarioTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="dados-tab" data-bs-toggle="tab"
+                    data-bs-target="#dados" type="button" role="tab">Dados principais</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="extras-tab" data-bs-toggle="tab"
+                    data-bs-target="#extras" type="button" role="tab">Dados adicionais</button>
+          </li>
+        </ul>
+
+        <div class="tab-content mt-3" id="usuarioTabsContent">
+
+          <!-- 🧑 Aba: Dados principais -->
+          <div class="tab-pane fade show active" id="dados" role="tabpanel">
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label>Nome</label>
+                <input type="text" name="nome" class="form-control" required value="{{ nome or '' }}">
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label>Nome de usuário</label>
+                <input type="text" name="nome_usuario" class="form-control" required value="{{ nome_usuario or '' }}">
+              </div>
+            </div>
+
+            <div class="alert alert-primary d-flex align-items-center" role="alert">
+              <i class="bi bi-hash me-2"></i>
+              <div>Empresa - {{ current_user.empresa.nome }}</div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label>Email</label>
+                <input type="email" name="email" class="form-control" value="{{ email or '' }}">
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label>Senha</label>
+                <input type="password" name="senha" class="form-control" required placeholder="Digite a senha">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label>Tipo de usuário</label>
+              <select name="tipo" class="form-select">
+                <option value="vendedor" {% if tipo == 'vendedor' %}selected{% endif %}>Vendedor</option>
+                <option value="gerente" {% if tipo == 'gerente' %}selected{% endif %}>Gerente</option>
+                <option value="admin" {% if tipo == 'admin' %}selected{% endif %}>Administrador</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 📋 Aba: Dados adicionais -->
+<div class="tab-pane fade" id="extras" role="tabpanel">
+
+  <div class="row">
+    <!-- 📱 Telefone -->
+    <div class="col-md-6 mb-3">
+      <label>Telefone</label>
+      <input type="text" name="telefone" class="form-control" placeholder="(99) 99999-9999">
+    </div>
+    <!-- 🧾 Documento -->
+    <div class="col-md-6 mb-3">
+      <label>Documento</label>
+      <input type="text" name="documento" class="form-control" placeholder="CPF ou CNPJ">
+    </div>
+  </div>
+
+  <!-- 🏡 Endereço separado -->
+  <div class="row">
+    <div class="col-md-4 mb-3">
+      <label>Rua</label>
+      <input type="text" name="rua" class="form-control" placeholder="Ex: Av. Brasil">
+    </div>
+
+    <div class="col-md-2 mb-3">
+      <label>Número</label>
+      <input type="text" name="numero" class="form-control" placeholder="Ex: 123">
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <label>Bairro</label>
+      <input type="text" name="bairro" class="form-control" placeholder="Ex: Centro">
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <label>CEP</label>
+      <input type="text" name="cep" class="form-control" placeholder="Ex: 79000-000">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label>Cidade</label>
+      <input type="text" name="cidade" class="form-control" placeholder="Ex: Campo Grande">
+    </div>
+
+    <div class="col-md-6 mb-3">
+      <label>Estado</label>
+      <input type="text" name="estado" class="form-control" placeholder="Ex: MS">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label>Data de nascimento</label>
+      <input type="date" name="nascimento" class="form-control">
+    </div>
+  </div>
+
+</div>
+
+        <!-- ✅ Botões -->
+        <div class="text-end mt-3">
+          <a href="{{ url_for('listar_funcionarios') }}" class="btn btn-outline-secondary me-2">Cancelar</a>
+          <button type="submit" class="btn btn-outline-primary">
+            <i class="bi bi-check-circle-fill"></i> Salvar
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+{% if alerta == 'salvo' %}
+<script>
+Swal.fire({
+  title: 'Cadastro realizado com sucesso!',
+  icon: 'success',
+  confirmButtonText: 'OK'
+}).then((result) => {
+  if (result.isConfirmed) {
+    window.location.href = '/listar_funcionarios';
+  }
+});
+
+</script>
+{% elif alerta == 'nome' %}
+<script>
+Swal.fire({
+  icon: 'error',
+  title: 'Nome já cadastrado!',
+  text: 'Já existe um usuário com este nome.',
+  confirmButtonColor: '#d33'
+});
+</script>
+{% elif alerta == 'nome_usuario' %}
+<script>
+Swal.fire({
+  icon: 'error',
+  title: 'Nome de usuário duplicado!',
+  text: 'Este nome de usuário já está em uso. Escolha outro.',
+  confirmButtonColor: '#d33'
+});
+</script>
+{% elif alerta == 'email' %}
+<script>
+Swal.fire({
+  icon: 'error',
+  title: 'E-mail já utilizado!',
+  text: 'Já existe um usuário com este e-mail cadastrado.',
+  confirmButtonColor: '#d33'
+});
+</script>
+{% elif alerta == 'erro_interno' %}
+<script>
+Swal.fire({
+  icon: 'error',
+  title: 'Erro inesperado!',
+  text: 'Não foi possível concluir o cadastro. Tente novamente.',
+  confirmButtonColor: '#d33'
+});
+</script>
+{% endif %}
+{% endblock%}

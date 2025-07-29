@@ -1,0 +1,335 @@
+
+body {
+  background-color: rgb(228, 228, 228); /* cor de fundo amarelo claro */
+}
+/* Estilização geral da tabela */
+table.table-leads {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Cabeçalho fixo com sombra leve */
+.table-leads thead {
+  position: sticky;
+  top: 0;
+  background-color: #e3f2fd;
+  z-index: 1;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* Badge do status com espaçamento */
+.badge-status {
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+/* Estilo alternativo para linhas pares */
+.table-leads tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Ajuste visual nos ícones dos botões */
+.table-leads .btn i {
+  margin-right: 4px;
+}
+
+/* Estilo para data ausente */
+.text-muted {
+  color: #999 !important;
+  font-style: italic;
+}
+
+/* Cor sutil por status usando Bootstrap 5.3 */
+.bg-success-subtle {
+  background-color: #d1e7dd !important;
+}
+.bg-warning-subtle {
+  background-color: #fff3cd !important;
+}
+.bg-danger-subtle {
+  background-color: #f8d7da !important;
+}
+.bg-info-subtle {
+  background-color: #cff4fc !important;
+}
+.bg-light {
+  background-color: #f8f9fa !important;
+}
+
+/* Tema: Azul Claro */
+.table-theme-azul-claro thead > tr > th {
+  background-color: #a7f7e9;
+}
+
+/* Tema: Cinza Suave */
+.table-theme-cinza-suave thead > tr > th {
+  background-color: #1a63ac;
+}
+
+/* Tema: Lavanda */
+.table-theme-lavanda thead {
+  background-color: #E6E6FA;
+}
+
+/* Tema: Verde Menta */
+.table-theme-verde-menta thead {
+  background-color: #F5FFFA;
+}
+
+/* Tema: Bege Claro */
+.table-theme-bege-claro thead {
+  background-color: #FFF8DC;
+}
+.table-theme-bege-claro thead {
+  background-color: #dcf8ff;
+}
+
+/* Tema: Lilás Claro */
+.table-theme-lilas-claro thead {
+  background-color: #E0BBE4;
+}
+
+/* Tema: Pêssego */
+.table-theme-pessego thead {
+  background-color: #FFE5B4;
+}
+
+/* Tema: Azul Gelo */
+.table-theme-azul-gelo thead > tr > th {
+  background-color: #F0F8FF;
+}
+.table-theme-lilas-claro > thead > tr > th {
+  background-color: #E0BBE4 !important;
+}
+table.table-theme-verde-menta > thead > tr > th {
+ background-color: #d87474 !important;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: #1378dd; /* lilás claro */
+  color: #fff;
+  padding: 24px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+}
+
+.sidebar h4 {
+  color: #fff;
+  font-weight: 600;
+}
+
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.sidebar .nav-link:hover {
+  background-color: rgba(255,255,255,0.15);
+  text-decoration: none;
+}
+
+.sidebar .nav-link i {
+  margin-right: 8px;
+}
+.btn-success:hover {
+  transform: scale(1.03);
+  transition: transform 0.2s ease-in-out;
+}
+.grafico-pizza-container {
+  max-width: 400px;
+  margin: 0 auto;
+}
+canvas#graficoOrigem {
+  height: 60px;
+}
+/* Estilo para seletor "Mostrar X registros" */
+.dataTables_length {
+  margin-bottom: 10px;
+}
+.dataTables_length select {
+  width: auto;
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+  background-color: #f8f9fa;
+  font-size: 0.9rem;
+}
+
+/* Campo de busca */
+.dataTables_filter label {
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+.dataTables_filter input {
+  width: 100%;
+  max-width: 250px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+  font-size: 0.9rem;
+  background-color: #f8f9fa;
+}
+
+/* Info de paginação (texto) */
+.dataTables_info {
+  font-size: 0.9rem;
+  color: #495057;
+  margin-top: 10px;
+}
+
+/* Controles de paginação */
+.dataTables_paginate .paginate_button {
+  padding: 6px 12px;
+  margin: 2px;
+  border-radius: 4px;
+  background-color: #ffffff;
+  border: 1px solid #ced4da;
+  font-size: 0.85rem;
+  color: #007bff;
+}
+.dataTables_paginate .paginate_button.current {
+  background-color: #007bff;
+  color: #fff !important;
+  border-color: #007bff;
+}
+.dataTables_paginate .paginate_button:hover {
+  background-color: #e9ecef;
+  color: #0056b3 !important;
+  border-color: #adb5bd;
+}
+.dataTables_length {
+  font-size: 0.95rem;
+  margin-top: 30px;
+}
+
+@media (max-width: 1440px) {
+  .table td, .table th {
+    font-size: 0.875rem;
+    padding: 0.4rem;
+  }
+}
+.table-theme-verde-menta th,
+.table-theme-verde-menta td {
+  border: 1px solid #dee2e6; /* Mesma cor usada pelo Bootstrap para bordas suaves */
+  padding: 0.5rem;
+  vertical-align: middle;
+}
+
+.table-theme-verde-menta {
+  border-collapse: collapse;
+}
+.table-theme-verde-menta {
+  border-collapse: collapse; /* Evita bordas duplas entre células */
+}
+.table-theme-lilas-claro.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #f3e6f8;
+}
+.table-theme-lilas-claro {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.table-theme-lilas-claro th,
+.table-theme-lilas-claro td {
+  border: 1px solid #cba4e9; /* borda lilás suave */
+  padding: 0.5rem;
+  text-align: left;
+  background-color: #fdf6ff;
+}
+.table-theme-verde-menta {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+
+
+.table-theme-verde-menta.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #f7ebe1;
+}
+
+.table-theme-verde-menta tbody tr:hover {
+  background-color: #c8eedc;
+}
+.table-theme-azul-claro {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.table-theme-azul-claro th,
+.table-theme-azul-claro td {
+  border: 1px solid #a4c9f0; /* azul suave */
+  padding: 0.5rem;
+  text-align: left;
+  background-color: #eefdff; /* fundo bem clarinho */
+}
+
+.table-theme-azul-claro.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #e0effb;
+}
+
+.table-theme-azul-claro tbody tr:hover {
+  background-color: #cbe1f7;
+}
+table.dataTable {
+  border-collapse: collapse !important;
+  border: none !important;
+}
+.table-theme-verde-menta th,
+.table-theme-verde-menta td {
+  border: 1px solid #d87474; 
+  text-align: left;
+  background-color: #fcdada;
+}
+.table-theme-verde-menta {
+  border-collapse: collapse;
+  width: 100%;
+}
+.botao-cadastro {
+  background-color: #0d6efd;         /* Azul padrão Bootstrap */
+  color: white;                      /* Texto branco */
+  border: none;
+  padding: 10px 20px;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: 0.3s ease;
+}
+
+.botao-cadastro:hover {
+  background-color: #084dcd;         /* Azul mais escuro no hover */
+}
+
+/* Estilo para a célula de ação */
+
+/* Cores personalizadas por tipo de ação */
+.log-acao i.bi-trash3     { color: #dc3545; }  /* Excluiu - vermelho */
+.log-acao i.bi-pencil-square { color: #007bff; }  /* Editou - azul */
+.log-acao i.bi-plus-circle   { color: #198754; }  /* Criou - verde */
+.log-acao i.bi-arrow-repeat  { color: #ffc107; }  /* Atualizou - amarelo */
+.log-acao i.bi-info-circle   { color: #6c757d; }  /* Genérico - cinza */
+
+/* Alternância de fundo por linha, se quiser aplicar */
+tr.log-excluiu       { background-color: #f8d7da; }
+tr.log-editou        { background-color: #cfe2ff; }
+tr.log-criou         { background-color: #d1e7dd; }
+tr.log-atualizou     { background-color: #fff3cd; }
+
+/* Estilo para cortar detalhes muito longos */
+td.log-detalhes {
+  max-width: 500px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

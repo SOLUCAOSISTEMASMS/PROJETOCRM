@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block conteudo %}
+<div class="container mt-4">
+
+  <h3><i class="bi bi-person-plus-fill"></i> Cadastrar Novo Cliente</h3>
+
+  <ul class="nav nav-tabs mt-3" role="tablist">
+    <li class="nav-item">
+      <a class="nav-link active" data-bs-toggle="tab" href="#dados">Dados do Cliente</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link disabled" href="#">Contatos</a>
+    </li>
+  </ul>
+
+  <div class="tab-content border p-4 rounded-bottom">
+    <div class="tab-pane fade show active" id="dados">
+
+      <form method="POST" action="{{ url_for('criar_cliente') }}">
+        {{ form.hidden_tag() }}
+
+        {% for field in form %}
+          {% for error in field.errors %}
+            <div class="alert alert-danger">{{ error }}</div>
+          {% endfor %}
+        {% endfor %}
+
+        <div class="row">
+          <div class="col-md-2 mb-3">
+            <label for="codigo">Código</label>
+            <input type="text" class="form-control text-center" id="codigo" name="codigo"
+                   value="{{ cliente.codigo if cliente else '' }}" readonly>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="nome">Nome</label>
+            {{ form.nome(class="form-control", id="nome") }}
+          </div>
+          <div class="col-md-4 mb-3">
+            <label for="cpf_cnpj">CPF ou CNPJ</label>
+            {{ form.cpf_cnpj(class="form-control", id="cpf_cnpj", placeholder="Digite o CPF ou CNPJ") }}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="empresa">Empresa</label>
+          {{ form.empresa(class="form-control", id="empresa") }}
+        </div>
+
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label for="telefone">Telefone</label>
+            {{ form.telefone(class="form-control", id="telefone") }}
+          </div>
+          <div class="col-md-4 mb-3">
+            <label for="email">Email</label>
+            {{ form.email(class="form-control", id="email") }}
+          </div>
+        </div>
+
+        <h5 class="mt-4">Endereço</h5>
+        <div class="row g-2">
+          <div class="col-md-4">
+            {{ form.rmcep(class="form-control", id="rmcep", placeholder="CEP") }}
+          </div>
+          <div class="col-md-8">
+            {{ form.endereco_rua(class="form-control", id="endereco_rua", placeholder="Rua") }}
+          </div>
+        </div>
+
+        <div class="row g-2 mt-2">
+          <div class="col-md-4">
+            {{ form.endereco_numero(class="form-control", id="endereco_numero", placeholder="Número") }}
+          </div>
+          <div class="col-md-4">
+            {{ form.endereco_complemento(class="form-control", id="endereco_complemento", placeholder="Complemento") }}
+          </div>
+        </div>
+
+        <div class="row g-2 mt-2">
+          <div class="col-md-4">
+            {{ form.bairro(class="form-control", id="bairro", placeholder="Bairro") }}
+          </div>
+          <div class="col-md-4">
+            {{ form.cidade(class="form-control", id="cidade", placeholder="Cidade") }}
+          </div>
+          <div class="col-md-4">
+            {{ form.estado(class="form-control", id="estado", placeholder="UF") }}
+          </div>
+        </div>
+
+        <div class="text-end mt-4">
+          <a href="{{ url_for('listar_clientes') }}" class="btn btn-outline-secondary me-2">Voltar</a>
+          <button type="submit" class="btn btn-outline-primary">
+            <i class="bi bi-check-circle-fill"></i> Salvar
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  $("#rmcep").mask("00000-000");
+  $("#cpf_cnpj").on("blur", function () {
+    const valor = $(this).val().replace(/\D/g, "");
+    if (valor.length <= 11) {
+      $(this).mask("000.000.000-00", {reverse: true});
+    } else {
+      $(this).mask("00.000.000/0000-00", {reverse: true});
+    }
+    $(this).trigger("input");
+  });
+
+  // Busca CEP
+  document.getElementById("rmcep").addEventListener("blur", function () {
+    const cep = this.value.replace(/\D/g, "");
+    if (cep.length === 8) {
+      fetch(`https://viacep.com.br/ws/${cep}/json/`)
+        .then(response => response.json())
+        .then(data => {
+          if (!("erro" in data)) {
+            document.getElementById("endereco_rua").value = data.logradouro || "";
+            document.getElementById("bairro").value = data.bairro || "";
+            document.getElementById("cidade").value = data.localidade || "";
+            document.getElementById("estado").value = data.uf || "";
+            document.getElementById("endereco_numero").focus();
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'CEP não encontrado',
+              text: 'Verifique o número digitado.',
+              confirmButtonColor: '#d33'
+            });
+          }
+        });
+    }
+  });
+
+  // Consulta CNPJ
+  document.getElementById("cpf_cnpj").addEventListener("blur", function () {
+    const cnpj = this.value.replace(/\D/g, "");
+    if (cnpj.length === 14) {
+      fetch(`https://publica.cnpj.ws/cnpj/${cnpj}`)
+        .then(response => response.json())
+        .then(data => {
+          const e = data.estabelecimento;
+          if (data.razao_social && e) {
+            document.getElementById("empresa").value = data.razao_social || "";
+            document.getElementById("endereco_rua").value = e.logradouro || "";
+            document.getElementById("endereco_numero").value = e.numero || "";
+            document.getElementById("endereco_complemento").value = e.complemento || "";
+            document.getElementById("bairro").value = e.bairro || "";
+            document.getElementById("cidade").value = e.cidade?.nome || "";
+            document.getElementById("estado").value = e.estado?.sigla || "";
+            document.getElementById("rmcep").value = e.cep || "";
+          } else {
+            Swal.fire({
+              icon: 'warning',
+              title: 'CNPJ não encontrado',
+              text: 'Verifique o número digitado.',
+              confirmButtonColor: '#f8af00'
+            });
+          }
+        })
+        .catch(() => {
+          Swal.fire({
+            icon: 'error',
+            title: 'Erro na consulta de CNPJ',
+            text: 'Não foi possível acessar os dados.',
+            confirmButtonColor: '#d33'
+          });
+        });
+    }
+  });
+});
+</script>
+
+<!-- SweetAlert Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <script>
+        Swal.fire({
+  title: 'Cadastro realizado com sucesso!',
+  icon: 'success',
+  confirmButtonText: 'OK'
+}).then((result) => {
+  if (result.isConfirmed) {
+    window.location.href = '/listar_clientes';
+  }
+});
+      </script>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+{% endblock %}
