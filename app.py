@@ -1500,7 +1500,7 @@ def gerar_codigo():
         return str(ultimo_codigo + 1)
     except (AttributeError, ValueError):
         return '1'  # Primeiro usuário
-
+app.register_blueprint(relatorios_bp)
 
 # Inicialização do servidor/# Criação automática do banco de dados na primeira execução
 if __name__ == '__main__':
@@ -1538,7 +1538,7 @@ if __name__ == '__main__':
             print('✅ Usuário admin global criado com sucesso.')
         else:
             print('ℹ️ Usuário admin já existe.')
-            app.register_blueprint(relatorios_bp)
+            
 
     # 🔥 Aqui inicia o servidor Flask
     app.run(debug=True)

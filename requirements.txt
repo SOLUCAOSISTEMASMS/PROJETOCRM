@@ -4,3 +4,10 @@ gunicorn
 flask-login
 flask-wtf
 python-slugify
+
+Flask==2.3.3
+Werkzeug==2.3.7
+Flask-Login==0.6.2
+python-slugify==8.0.1
+Flask-WTF==1.1.1
+
