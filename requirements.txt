@@ -3,4 +3,4 @@ Flask_SQLAlchemy
 gunicorn
 flask-login
 flask-wtf
-
+python-slugify
