@@ -2,3 +2,5 @@ Flask
 Flask_SQLAlchemy
 gunicorn
 flask-login
+flask-wtf
+
