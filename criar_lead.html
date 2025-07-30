@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block titulo %}Cadastro de Lead{% endblock %}
+{% block conteudo %}
+
+<div class="container mt-5">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">Cadastro de Lead</h4>
+    </div>
+
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('criar_lead') }}">
+
+        <!-- Navegação de abas -->
+        <ul class="nav nav-tabs" role="tablist">
+          <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#cliente" type="button">Dados do Cliente</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#lead" type="button">Detalhes do Lead</button>
+          </li>
+        </ul>
+
+        <!-- Conteúdo das abas -->
+        <div class="tab-content p-3 border-bottom border-start border-end rounded-bottom">
+          <!-- Aba 1: Dados do Cliente -->
+          <div class="tab-pane fade show active" id="cliente">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Cliente</label>
+                <select name="cliente_id" id="cliente_id" class="form-select">
+                  <option value="">Selecione um cliente</option>
+
+                  {% for cliente in clientes %}
+                    <option value="{{ cliente.codigo }}" {% if cliente_selecionado and cliente.codigo == cliente_selecionado.codigo %}selected{% endif %}>
+                      {{ cliente.nome }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Empresa</label>
+                <input type="text" id="cliente_empresa" name="empresa" class="form-control" readonly>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" id="cliente_email" name="email" class="form-control">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Telefone</label>
+                <input type="text" id="cliente_telefone" name="telefone" class="form-control">
+              </div>
+            </div>
+          </div>
+
+          <!-- Aba 2: Detalhes do Lead -->
+          <div class="tab-pane fade" id="lead">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Cargo</label>
+                <input type="text" name="cargo" class="form-control">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Origem do Lead</label>
+                <select name="origem" class="form-select" required>
+                  <option value="">Selecione a origem</option>
+                  <option value="Instagram">Instagram</option>
+                  <option value="Site">Site</option>
+                  <option value="Indicação">Indicação</option>
+                  <option value="LinkedIn">LinkedIn</option>
+                  <option value="Facebook">Facebook</option>
+                  <option value="Google">Google</option>
+                  <option value="Outros">Outros</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Data de Retorno</label>
+                <input type="date" name="data_retorno" class="form-control">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                  <option value="Novo">Novo</option>
+                  <option value="Em contato">Em contato</option>
+                  <option value="Convertido">Convertido</option>
+                  <option value="Perdido">Perdido</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Interesses</label>
+              <textarea name="interesses" rows="2" class="form-control"></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Observações internas</label>
+              <textarea name="observacoes" rows="3" class="form-control"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botões fora das abas -->
+        <div class="mt-4 d-flex flex-wrap gap-2">
+          <button type="submit" class="btn btn-outline-primary">
+            <i class="bi bi-check-circle-fill"></i> Salvar Lead
+          </button>
+
+          <a href="/" class="btn btn-secondary">Cancelar Alteração</a>
+
+          <a href="{{ url_for('listar_clientes') }}" class="btn btn-outline-success">
+            <i class="bi bi-people-fill"></i> Voltar para Clientes
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Script para preencher automaticamente os campos -->
+<script>
+  const clientes = JSON.parse('{{ clientes_dict | tojson | safe }}');
+
+  function preencherCampos() {
+    const id = document.getElementById('cliente_id').value;
+    const dados = clientes[id] || {};
+    document.getElementById('cliente_email').value = dados.email || '';
+    document.getElementById('cliente_telefone').value = dados.telefone || '';
+    document.getElementById('cliente_empresa').value = dados.empresa || '';
+  }
+
+  window.addEventListener('DOMContentLoaded', preencherCampos);
+  document.getElementById('cliente_id').addEventListener('change', preencherCampos);
+</script>
+
+{% endblock %}
