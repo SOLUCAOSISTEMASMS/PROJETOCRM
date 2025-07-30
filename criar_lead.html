@@ -30,7 +30,6 @@
                 <label class="form-label">Cliente</label>
                 <select name="cliente_id" id="cliente_id" class="form-select">
                   <option value="">Selecione um cliente</option>
-
                   {% for cliente in clientes %}
                     <option value="{{ cliente.codigo }}" {% if cliente_selecionado and cliente.codigo == cliente_selecionado.codigo %}selected{% endif %}>
                       {{ cliente.nome }}
