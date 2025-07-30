@@ -928,21 +928,36 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.exc import IntegrityError
 
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import or_
 
 @app.route('/criar_usuario', methods=['GET', 'POST'])
 @login_required
 @permissoes_requeridas('admin')
 def criar_usuario():
+    empresas = []
+    empresa_id = current_user.empresa_id
+
+    # 🔄 Se admin global, carrega lista de empresas
+    if empresa_id is None and current_user.tipo == 'admin':
+        empresas = Empresa.query.order_by(Empresa.nome.asc()).all()
+
     if request.method == 'POST':
-        nome = request.form.get('nome')
-        nome_usuario = request.form.get('nome_usuario')
-        email = request.form.get('email')
-        senha = request.form.get('senha')
-        tipo = request.form.get('tipo')
+        nome = request.form.get('nome', '').strip()
+        nome_usuario = request.form.get('nome_usuario', '').strip()
+        email = request.form.get('email', '').strip()
+        senha = request.form.get('senha', '').strip()
+        tipo = request.form.get('tipo') or 'vendedor'
 
-        empresa_id = current_user.empresa_id
+        # 🏢 Se admin global, pega empresa selecionada
+        if empresa_id is None and current_user.tipo == 'admin':
+            slug = request.form.get('empresa_slug')
+            empresa_selecionada = Empresa.query.filter_by(slug=slug).first()
+            if not empresa_selecionada:
+                flash("Empresa selecionada é inválida.", "danger")
+                return render_template('criar_usuario.html', empresas=empresas)
+            empresa_id = empresa_selecionada.id
 
-        # Validações de unicidade
+        # 🔍 Validações de unicidade
         if Usuario.query.filter_by(nome=nome).first():
             alerta = 'nome'
         elif Usuario.query.filter_by(nome_usuario=nome_usuario).first():
@@ -958,18 +973,19 @@ def criar_usuario():
                                    nome=nome,
                                    nome_usuario=nome_usuario,
                                    email=email,
-                                   tipo=tipo)
+                                   tipo=tipo,
+                                   empresas=empresas)
 
-        tipo = request.form.get('tipo') or 'vendedor'
-
-        # 🔐 Lógica de código sequencial
-        admin_existente = Usuario.query.filter_by(empresa_id=empresa_id, tipo='admin').first()
+        # 🔐 Geração de código
+        admin_existente = Usuario.query.filter_by(tipo='admin').filter(
+            or_(Usuario.empresa_id == empresa_id, Usuario.empresa_id == None)
+        ).first()
 
         if tipo == 'admin' and not admin_existente:
-            codigo = 1  # 👑 Reservado para admin global
+            codigo = 1
         else:
             ultimo = Usuario.query.filter(Usuario.codigo != 1).order_by(Usuario.codigo.desc()).first()
-            codigo = 2 if not ultimo or ultimo.codigo is None else ultimo.codigo + 1
+            codigo = 2 if not ultimo or not ultimo.codigo else ultimo.codigo + 1
 
         try:
             novo_usuario = Usuario(
@@ -984,14 +1000,13 @@ def criar_usuario():
             db.session.add(novo_usuario)
             db.session.commit()
 
-            # 📝 Log de criação de usuário
             registrar_log(
                 usuario_id=current_user.id,
                 acao="Criou usuário",
                 detalhes=f"Código: {codigo}, Nome: {nome}, Nome de usuário: {nome_usuario}, Email: {email}, Tipo: {tipo}"
             )
 
-            return render_template('criar_usuario.html', alerta='salvo')
+            return render_template('criar_usuario.html', alerta='salvo', empresas=empresas)
 
         except IntegrityError:
             db.session.rollback()
@@ -1000,9 +1015,11 @@ def criar_usuario():
                                    nome=nome,
                                    nome_usuario=nome_usuario,
                                    email=email,
-                                   tipo=tipo)
+                                   tipo=tipo,
+                                   empresas=empresas)
 
-    return render_template('criar_usuario.html')
+    return render_template('criar_usuario.html', empresas=empresas)
+
 
 @app.route('/salvar_usuarios', methods=['POST'])
 @login_required
