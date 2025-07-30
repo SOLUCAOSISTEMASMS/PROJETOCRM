@@ -37,7 +37,7 @@
           </div>
           <div class="col-md-4 mb-3">
             <label for="cpf_cnpj">CPF ou CNPJ</label>
-            {{ form.cpf_cnpj(class="form-control", id="cpf_cnpj", placeholder="Digite o CPF ou CNPJ") }}
+           <input type="text" id="cpf_cnpj" name="cpf_cnpj" class="form-control" placeholder="Digite CPF ou CNPJ">
           </div>
         </div>
 
@@ -100,105 +100,100 @@
   </div>
 </div>
 
-<!-- Scripts -->
+<!-- Scripts essenciais -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-  $("#rmcep").mask("00000-000");
-  $("#cpf_cnpj").on("blur", function () {
-    const valor = $(this).val().replace(/\D/g, "");
-    if (valor.length <= 11) {
-      $(this).mask("000.000.000-00", {reverse: true});
-    } else {
-      $(this).mask("00.000.000/0000-00", {reverse: true});
-    }
-    $(this).trigger("input");
-  });
+$(document).ready(function () {
+  const $cpfCnpj = $('#cpf_cnpj');
 
-  // Busca CEP
-  document.getElementById("rmcep").addEventListener("blur", function () {
-    const cep = this.value.replace(/\D/g, "");
+  let mascaraAtual = '';
+
+  function definirMascara(valor) {
+    const digitos = valor.replace(/\D/g, '');
+    const novaMascara = digitos.length <= 11 ? '000.000.000-00' : '00.000.000/0000-00';
+
+    // só aplica se a máscara mudou
+    if (mascaraAtual !== novaMascara) {
+      $cpfCnpj.mask(novaMascara);
+      mascaraAtual = novaMascara;
+    }
+  }
+
+  // Consulta CNPJ ao perder o foco
+  $cpfCnpj.on('blur', function () {
+  const raw = $(this).val().replace(/\D/g, '');
+
+  console.log("Disparou blur com:", raw); // Debug
+
+  // Aplica a máscara correta
+  const novaMascara = raw.length <= 11 ? '000.000.000-00' : '00.000.000/0000-00';
+  $cpfCnpj.unmask();
+  $cpfCnpj.mask(novaMascara, { reverse: true });
+
+  // Consulta CNPJ se houver 14 dígitos
+  if (raw.length >= 14) {
+    fetch(`https://publica.cnpj.ws/cnpj/${raw}`)
+      .then(response => response.json())
+      .then(data => {
+        const e = data.estabelecimento;
+        if (data.razao_social && e) {
+          $("#empresa").val(data.razao_social || "");
+          $("#endereco_rua").val(e.logradouro || "");
+          $("#endereco_numero").val(e.numero || "");
+          $("#endereco_complemento").val(e.complemento || "");
+          $("#bairro").val(e.bairro || "");
+          $("#cidade").val(e.cidade?.nome || "");
+          $("#estado").val(e.estado?.sigla || "");
+          $("#rmcep").val(e.cep || "");
+        } else {
+          Swal.fire({
+            icon: "warning",
+            title: "CNPJ não encontrado",
+            text: "Verifique o número digitado.",
+            confirmButtonColor: "#f8af00"
+          });
+        }
+      })
+      .catch(() => {
+        Swal.fire({
+          icon: "error",
+          title: "Erro na consulta de CNPJ",
+          text: "Não foi possível acessar os dados.",
+          confirmButtonColor: "#d33"
+        });
+      });
+  }
+});
+
+
+  // Consulta CEP ao perder foco
+  $('#rmcep').on('blur', function () {
+    const cep = $(this).val().replace(/\D/g, '');
     if (cep.length === 8) {
       fetch(`https://viacep.com.br/ws/${cep}/json/`)
         .then(response => response.json())
         .then(data => {
           if (!("erro" in data)) {
-            document.getElementById("endereco_rua").value = data.logradouro || "";
-            document.getElementById("bairro").value = data.bairro || "";
-            document.getElementById("cidade").value = data.localidade || "";
-            document.getElementById("estado").value = data.uf || "";
-            document.getElementById("endereco_numero").focus();
+            $("#endereco_rua").val(data.logradouro || "");
+            $("#bairro").val(data.bairro || "");
+            $("#cidade").val(data.localidade || "");
+            $("#estado").val(data.uf || "");
+            $("#endereco_numero").focus();
           } else {
             Swal.fire({
-              icon: 'error',
-              title: 'CEP não encontrado',
-              text: 'Verifique o número digitado.',
-              confirmButtonColor: '#d33'
+              icon: "error",
+              title: "CEP não encontrado",
+              text: "Verifique o número digitado.",
+              confirmButtonColor: "#d33"
             });
           }
-        });
-    }
-  });
-
-  // Consulta CNPJ
-  document.getElementById("cpf_cnpj").addEventListener("blur", function () {
-    const cnpj = this.value.replace(/\D/g, "");
-    if (cnpj.length === 14) {
-      fetch(`https://publica.cnpj.ws/cnpj/${cnpj}`)
-        .then(response => response.json())
-        .then(data => {
-          const e = data.estabelecimento;
-          if (data.razao_social && e) {
-            document.getElementById("empresa").value = data.razao_social || "";
-            document.getElementById("endereco_rua").value = e.logradouro || "";
-            document.getElementById("endereco_numero").value = e.numero || "";
-            document.getElementById("endereco_complemento").value = e.complemento || "";
-            document.getElementById("bairro").value = e.bairro || "";
-            document.getElementById("cidade").value = e.cidade?.nome || "";
-            document.getElementById("estado").value = e.estado?.sigla || "";
-            document.getElementById("rmcep").value = e.cep || "";
-          } else {
-            Swal.fire({
-              icon: 'warning',
-              title: 'CNPJ não encontrado',
-              text: 'Verifique o número digitado.',
-              confirmButtonColor: '#f8af00'
-            });
-          }
-        })
-        .catch(() => {
-          Swal.fire({
-            icon: 'error',
-            title: 'Erro na consulta de CNPJ',
-            text: 'Não foi possível acessar os dados.',
-            confirmButtonColor: '#d33'
-          });
         });
     }
   });
 });
 </script>
-
-<!-- SweetAlert Flash Messages -->
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, message in messages %}
-      <script>
-        Swal.fire({
-  title: 'Cadastro realizado com sucesso!',
-  icon: 'success',
-  confirmButtonText: 'OK'
-}).then((result) => {
-  if (result.isConfirmed) {
-    window.location.href = '/listar_clientes';
-  }
-});
-      </script>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
 
 {% endblock %}
