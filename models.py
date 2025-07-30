@@ -17,7 +17,7 @@ class Empresa(db.Model):
     slug = db.Column(db.String(100), nullable=False, unique=True)
     plano = db.Column(db.String(50), default='gratuito')
     criada_em = db.Column(db.DateTime, default=datetime.utcnow)
-    cnpj = db.Column(db.String(20), nullable=True)
+    cpf_cnpj = db.Column(db.String(20), unique=True, nullable=False)
     telefone = db.Column(db.String(50), nullable=True)
     email = db.Column(db.String(120), nullable=True)
     endereco = db.Column(db.String(200), nullable=True)
@@ -126,7 +126,7 @@ class Cliente(db.Model):
     cidade = db.Column(db.String(50))
     estado = db.Column(db.String(2))      # Ex: 'SP', 'RJ'
     rmcep = db.Column(db.String(9))         # Formato: 00000-000
-    cpf_cnpj = db.Column(db.String(18), unique=True, nullable=False)
+    cpf_cnpj = db.Column(db.String(20), unique=True, nullable=False)
 
 
 class Contato(db.Model):
@@ -139,6 +139,9 @@ class Contato(db.Model):
 
     
 from wtforms import SelectField
+from wtforms.validators import DataRequired, Length, Regexp
+
+from wtforms import StringField
 
 class ClienteForm(FlaskForm):
     nome = StringField('Nome', validators=[DataRequired()])
@@ -152,7 +155,13 @@ class ClienteForm(FlaskForm):
     cidade = StringField('Cidade')
     estado = StringField('Estado')
     rmcep = StringField('CEP')
-    cpf_cnpj = StringField('CPF/CNPJ', validators=[DataRequired()])
+    cpf_cnpj = StringField('CPF/CNPJ', validators=[
+    DataRequired(message="Este campo é obrigatório."),
+    Length(min=11, max=20, message="Digite um CPF ou CNPJ válido."),
+    Regexp(r'^(\d{11}|\d{14}|\d{3}\.\d{3}\.\d{3}-\d{2}|\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2})$',
+       message="CPF ou CNPJ em formato inválido.")
+])
+
 
     status = SelectField(
         'Status',
