@@ -99,9 +99,9 @@
         <input type="password" name="senha" id="senha" class="form-control" required>
       </div>
       <div class="mb-3">
-        <label for="cnpj" class="form-label">CNPJ da Empresa</label>
-        <input type="text" name="cnpj" id="cnpj" class="form-control" maxlength="18" required>
-      </div>
+  <label for="cpf_cnpj" class="form-label">CPF ou CNPJ da Empresa</label>
+  <input type="text" name="cpf_cnpj" id="cpf_cnpj" class="form-control" maxlength="18" required>
+</div>
 
       <button type="submit" class="btn btn-primary w-100">Acessar</button>
 
@@ -115,9 +115,14 @@
   </div>
 
   <script src="https://unpkg.com/imask"></script>
-  <script>
-    const cnpjInput = document.getElementById('cnpj');
-    IMask(cnpjInput, { mask: '00.000.000/0000-00' });
-  </script>
+<script>
+  const docInput = document.getElementById('cpf_cnpj');
+  IMask(docInput, {
+    mask: [
+      { mask: '000.000.000-00' },      // CPF
+      { mask: '00.000.000/0000-00' }   // CNPJ
+    ]
+  });
+</script>
 </body>
 </html>

@@ -73,9 +73,11 @@
               </div>
 
               <div class="mb-3">
-                <label for="cnpj" class="form-label"><i class="fas fa-id-card me-2"></i>CNPJ</label>
-                <input type="text" class="form-control" id="cnpj" name="cnpj">
-              </div>
+  <label for="cpf_cnpj" class="form-label">
+    <i class="fas fa-id-card me-2"></i> CPF ou CNPJ
+  </label>
+  <input type="text" class="form-control" id="cpf_cnpj" name="cpf_cnpj" required>
+</div>
 
               <!-- Usuário Admin -->
               <hr class="my-4">
@@ -122,7 +124,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+   {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -131,47 +136,37 @@
   $(document).ready(function () {
     $('#telefone').mask('(00) 00000-0000');
 
-$('#telefone').on('blur', function () {
-  let valor = $(this).val().replace(/\D/g, '');
-  if (valor.length === 10) {
-    $(this).mask('(00) 0000-0000');
-  } else {
-    $(this).mask('(00) 00000-0000');
-  }
-});
+    $('#telefone').on('blur', function () {
+      let valor = $(this).val().replace(/\D/g, '');
+      if (valor.length === 10) {
+        $(this).mask('(00) 0000-0000');
+      } else {
+        $(this).mask('(00) 00000-0000');
+      }
+    });
 
-    $('#cnpj').mask('00.000.000/0000-00');
+    const $cpfCnpj = $('#cpf_cnpj');
+    let mascaraAtual = '';
+
+    function definirMascara(valor) {
+      const digitos = valor.replace(/\D/g, '');
+      const novaMascara = digitos.length <= 11
+        ? '000.000.000-00'
+        : '00.000.000/0000-00';
+
+      if (mascaraAtual !== novaMascara) {
+        $cpfCnpj.unmask();
+        $cpfCnpj.mask(novaMascara, { reverse: true });
+        mascaraAtual = novaMascara;
+      }
+    }
+
+    $cpfCnpj.on('blur', function () {
+      definirMascara($(this).val());
+    });
   });
 </script>
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        {% for category, message in messages %}
-          let tipo = "{{ category }}";
-          let texto = "{{ message }}";
-
-          if (tipo === "success") {
-            Swal.fire({
-              icon: "success",
-              title: "Cadastro realizado!",
-              text: texto,
-              confirmButtonColor: "#198754"
-            }).then(() => {
-              window.location.href = "{{ url_for('login') }}";
-            });
-          } else if (tipo === "danger") {
-            Swal.fire({
-              icon: "error",
-              title: "Erro ao cadastrar",
-              text: texto,
-              confirmButtonColor: "#dc3545"
-            });
-          }
-        {% endfor %}
-      });
-    </script>
   {% endif %}
 {% endwith %}
 
