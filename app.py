@@ -459,41 +459,41 @@ def relatorio_leads():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        nome_usuario = request.form['nome_usuario']
-        senha = request.form['senha']
-        cnpj = request.form['cnpj'].replace('.', '').replace('/', '').replace('-', '')
+        nome_usuario = request.form.get('nome_usuario', '').strip()
+        senha = request.form.get('senha', '').strip()
+        cpf_cnpj = request.form.get('cpf_cnpj', '').replace('.', '').replace('/', '').replace('-', '').strip()
 
-        # 📌 Validação básica do CNPJ
-        if not re.match(r'^\d{14}$', cnpj):
-            flash('CNPJ inválido.')
+        # 📌 Validação básica para CPF (11 dígitos) ou CNPJ (14 dígitos)
+        if not cpf_cnpj.isdigit() or len(cpf_cnpj) not in [11, 14]:
+            flash('CPF ou CNPJ inválido.', 'danger')
             return redirect('/login')
 
         # 🔍 Busca o usuário
         usuario = Usuario.query.filter_by(nome_usuario=nome_usuario).first()
         if not usuario:
-            flash('Usuário não encontrado.')
+            flash('Usuário não encontrado.', 'danger')
             return redirect('/login')
 
         # ❌ Verifica se está ativo
         if not usuario.ativo:
-            flash('Este usuário está inativo.')
+            flash('Este usuário está inativo.', 'danger')
             return redirect('/login')
 
-        # 🔍 Busca a empresa pelo CNPJ
-        empresa = Empresa.query.filter_by(cnpj=cnpj).first()
+        # 🔍 Busca empresa pelo CPF ou CNPJ
+        empresa = Empresa.query.filter_by(cpf_cnpj=cpf_cnpj).first()
         if not empresa:
-            flash('Empresa com esse CNPJ não encontrada.')
+            flash('Empresa com esse CPF/CNPJ não encontrada.', 'danger')
             return redirect('/login')
 
-        # 🔐 Verifica permissão de acesso à empresa
+        # 🔐 Verifica permissão de acesso
         acesso_liberado = False
         if usuario.tipo == 'admin' and usuario.empresa_id is None:
             acesso_liberado = True  # 🔓 Admin global
-        elif usuario.empresa == empresa:
-            acesso_liberado = True  # ✅ Vínculo direto à empresa
+        elif usuario.empresa_id == empresa.id:
+            acesso_liberado = True  # ✅ Vínculo direto
 
         if not acesso_liberado:
-            flash('Este usuário não tem acesso à empresa informada.')
+            flash('Este usuário não tem acesso à empresa informada.', 'danger')
             return redirect('/login')
 
         # 🔑 Verifica a senha
@@ -502,7 +502,7 @@ def login():
 
             # ✅ Armazena empresa ativa na sessão
             session['empresa_id'] = empresa.id
-            session['empresa_nome'] = empresa.nome  # opcional
+            session['empresa_nome'] = empresa.nome
 
             # 📆 Verifica se há leads com retorno hoje
             hoje = date.today()
@@ -512,7 +512,7 @@ def login():
 
             return redirect('/listar')
         else:
-            flash('Usuário ou senha inválidos.')
+            flash('Usuário ou senha inválidos.', 'danger')
             return redirect('/login')
 
     # 👀 Exibe o formulário de login
@@ -562,21 +562,19 @@ from datetime import datetime
 @login_required
 def criar_lead():
     cliente_selecionado = None
-    cliente_id = request.args.get('cliente_id')
+    cliente_codigo = request.args.get('cliente_id')  # ainda vem como 'cliente_id' da URL
 
-    if cliente_id:
+    if cliente_codigo:
         try:
-            cliente_id_int = int(cliente_id)
-            cliente_selecionado = Cliente.query.get(cliente_id_int)
+            cliente_codigo_int = int(cliente_codigo)
+            cliente_selecionado = Cliente.query.filter_by(codigo=cliente_codigo_int).first()
             if not cliente_selecionado:
                 flash('❌ Cliente não encontrado na criação de lead.', 'danger')
         except ValueError:
             flash('❌ Parâmetro de cliente inválido.', 'danger')
 
-    # Buscar todos os clientes para preencher o select
     clientes = Cliente.query.order_by(Cliente.nome).all()
 
-    # Dicionário para preencher os campos via JS
     clientes_dict = {
         cliente.codigo: {
             'email': cliente.email,
@@ -592,7 +590,7 @@ def criar_lead():
             nome = request.form.get('nome')
             email = request.form.get('email')
             telefone = request.form.get('telefone')
-            cliente_id = int(request.form.get('cliente_id'))
+            cliente_codigo = int(request.form.get('cliente_id'))  # aqui também é 'codigo'
             status = request.form.get('status')
             cargo = request.form.get('cargo')
             origem = request.form.get('origem')
@@ -606,11 +604,16 @@ def criar_lead():
                 flash('⚠️ Sessão inválida: nenhuma empresa ativa.', 'danger')
                 return redirect(url_for('login'))
 
+            cliente = Cliente.query.filter_by(codigo=cliente_codigo).first()
+            if not cliente:
+                flash('❌ Cliente inválido para criação de lead.', 'danger')
+                return redirect(url_for('criar_lead'))
+
             novo_lead = Lead(
                 nome=nome,
                 email=email,
                 telefone=telefone,
-                cliente_id=cliente_id,
+                cliente_id=cliente.id,  # aqui ainda salva como ID, conforme model do Lead
                 cargo=cargo,
                 origem=origem,
                 status=status,
@@ -624,13 +627,10 @@ def criar_lead():
             db.session.add(novo_lead)
             db.session.commit()
 
-            cliente = Cliente.query.get(cliente_id)
-            nome_cliente = cliente.nome if cliente else "Cliente não encontrado"
-
             registrar_log(
                 usuario_id=current_user.id,
                 acao="Criou lead",
-                detalhes=f"Lead ID: {novo_lead.id}, Cliente: {nome_cliente}, Status: {status}, Origem: {origem}"
+                detalhes=f"Lead ID: {novo_lead.id}, Cliente: {cliente.nome}, Status: {status}, Origem: {origem}"
             )
 
             flash('✅ Lead criado com sucesso!', 'success')
@@ -1153,6 +1153,12 @@ def atualizar_cliente(id):
 def excluir_cliente(cliente_id):
     cliente = Cliente.query.get_or_404(cliente_id)
 
+    # 🔍 Verifica se há leads vinculados
+    leads_vinculados = Lead.query.filter_by(cliente_id=cliente_id).count()
+    if leads_vinculados > 0:
+        flash("❌ Este cliente possui leads vinculados e não pode ser excluído.", "warning")
+        return redirect(url_for('listar_clientes'))
+
     try:
         # 📝 Log antes da exclusão
         registrar_log(
@@ -1374,12 +1380,32 @@ from sqlalchemy import cast, Integer
 
 @app.route('/cadastro_empresa', methods=['GET', 'POST'])
 def cadastro_empresa():
-    def limpar_cnpj(cnpj_original):
-        return cnpj_original.replace('.', '').replace('/', '').replace('-', '')
+    def limpar_doc(doc):
+        return (doc or '').replace('.', '').replace('/', '').replace('-', '').strip()
+
+    def validar_cpf_cnpj(valor):
+        valor = limpar_doc(valor)
+        if len(valor) == 11:
+            return validar_cpf(valor)
+        elif len(valor) == 14:
+            return validar_cnpj(valor)
+        return False
+
+    def validar_cpf(cpf):
+        if not cpf.isdigit() or len(cpf) != 11 or cpf in (c * 11 for c in "0123456789"):
+            return False
+
+        def calc_digito(cpf, pesos):
+            soma = sum(int(a) * b for a, b in zip(cpf, pesos))
+            resto = soma % 11
+            return '0' if resto < 2 else str(11 - resto)
+
+        d1 = calc_digito(cpf[:9], list(range(10, 1, -1)))
+        d2 = calc_digito(cpf[:10], list(range(11, 1, -1)))
+        return cpf[-2:] == d1 + d2
 
     def validar_cnpj(cnpj):
-        cnpj = ''.join(filter(str.isdigit, cnpj))
-        if len(cnpj) != 14 or cnpj in (c * 14 for c in "1234567890"):
+        if not cnpj.isdigit() or len(cnpj) != 14 or cnpj in (c * 14 for c in "0123456789"):
             return False
 
         def calc_digito(cnpj, pesos):
@@ -1395,34 +1421,32 @@ def cadastro_empresa():
         ultimo_usuario = Usuario.query.order_by(
             cast(Usuario.codigo, Integer).desc()
         ).first()
-
         try:
-            ultimo_codigo = int(ultimo_usuario.codigo)
-            return str(ultimo_codigo + 1)
+            return str(int(ultimo_usuario.codigo) + 1)
         except (AttributeError, ValueError):
             return '1'
 
     if request.method == 'POST':
-        nome_empresa   = request.form.get('nome')
-        email_empresa  = request.form.get('email')
-        telefone       = request.form.get('telefone')
-        endereco       = request.form.get('endereco')
-        cidade         = request.form.get('cidade')
-        estado         = request.form.get('estado')
-        representante  = request.form.get('representante')
-        cnpj           = limpar_cnpj(request.form.get('cnpj'))
+        nome_empresa  = request.form.get('nome', '').strip()
+        email_empresa = request.form.get('email', '').strip()
+        telefone      = request.form.get('telefone', '').strip()
+        endereco      = request.form.get('endereco', '').strip()
+        cidade        = request.form.get('cidade', '').strip()
+        estado        = request.form.get('estado', '').strip()
+        representante = request.form.get('representante', '').strip()
+        cpf_cnpj      = request.form.get('cpf_cnpj')
 
-        admin_nome     = request.form.get('admin_nome')
-        admin_login    = request.form.get('admin_login')
-        admin_email    = request.form.get('admin_email')
-        admin_senha    = request.form.get('admin_senha')
+        admin_nome    = request.form.get('admin_nome', '').strip()
+        admin_login   = request.form.get('admin_login', '').strip()
+        admin_email   = request.form.get('admin_email', '').strip()
+        admin_senha   = request.form.get('admin_senha', '').strip()
 
-        if not all([nome_empresa, cnpj, telefone, admin_nome, admin_login, admin_email, admin_senha]):
+        if not all([nome_empresa, cpf_cnpj, telefone, admin_nome, admin_login, admin_email, admin_senha]):
             flash("Preencha todos os campos obrigatórios!", "danger")
             return redirect(url_for('cadastro_empresa'))
 
-        if not validar_cnpj(cnpj):
-            flash("CNPJ inválido!", "danger")
+        if not validar_cpf_cnpj(cpf_cnpj):
+            flash("CPF ou CNPJ inválido!", "danger")
             return redirect(url_for('cadastro_empresa'))
 
         try:
@@ -1438,7 +1462,7 @@ def cadastro_empresa():
                 slug=slug_final,
                 plano='gratuito',
                 criada_em=datetime.now(UTC),
-                cnpj=cnpj,
+                cpf_cnpj=limpar_doc(cpf_cnpj),
                 telefone=telefone,
                 email=email_empresa,
                 endereco=endereco,
@@ -1477,7 +1501,7 @@ def cadastro_empresa():
         except Exception as e:
             print(f"Erro ao cadastrar: {e}")
             flash("Erro ao cadastrar empresa ou usuário.", "danger")
-            return redirect(url_for('login'))
+            return redirect(url_for('cadastro_empresa'))
 
     return render_template('cadastro_empresa.html')
 
@@ -1513,7 +1537,8 @@ if __name__ == '__main__':
             empresa = Empresa(
                 nome='Empresa Teste',
                 slug='empresateste',
-                plano='gratuito'
+                plano='gratuito',
+                cpf_cnpj='00000000000000'
             )
             db.session.add(empresa)
             db.session.commit()
